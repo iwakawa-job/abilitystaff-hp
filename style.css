@@ -324,3 +324,20 @@ img { max-width: 100%; display: block; }
 .detail-label { font-size: 12px; font-weight: 700; color: #2d5a8e; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em; }
 .detail-text { font-size: 13px; color: #444; line-height: 1.8; }
 .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid #e8eef5; text-align: center; }
+
+/* ===== 特徴グリッド ===== */
+.stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+.stat-card { background: #f8f9fc; border-radius: 8px; padding: 1.5rem; border: 1px solid #e8eef5; text-align: center; }
+.stat-num { font-family: 'Noto Serif JP', serif; font-size: 40px; font-weight: 700; color: #1a3a5c; line-height: 1; }
+.stat-unit { font-size: 18px; font-weight: 400; }
+.stat-label { font-size: 13px; font-weight: 700; color: #2d5a8e; margin: 0.4rem 0 0.75rem; }
+.stat-body { font-size: 12px; color: #666; line-height: 1.7; text-align: left; }
+
+@media (max-width: 768px) {
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ===== 特徴カード内の実績数字 ===== */
+.feature-stat { display: flex; justify-content: space-between; font-size: 13px; color: #555; padding: 6px 0; border-bottom: 1px solid #e8eef5; }
+.feature-stat:last-child { border-bottom: none; }
+.feature-stat strong { color: #1a3a5c; font-size: 16px; }
