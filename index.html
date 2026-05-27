@@ -15,8 +15,7 @@
   <header class="nav" id="nav">
     <div class="nav-inner">
       <a class="nav-logo" href="#" data-page="home">
-        <span class="nav-logo-ja">アビリティスタッフ株式会社</span>
-        <span class="nav-logo-en">ABILITY STAFF Co.,Ltd.</span>
+        <img src="img_logo.png" alt="アビリティスタッフ株式会社" class="nav-logo-img">
       </a>
       <nav class="nav-links">
         <div class="nav-item has-dropdown">
@@ -143,6 +142,7 @@
       <div class="page-hero" style="background-image:url('img_jobs.jpg')">
         <div class="page-hero-overlay"></div>
         <div class="page-hero-content">
+          <p class="breadcrumb"><a href="#" data-page="home">HOME</a> &gt; サービス &gt; 転職サービス</p>
           <p class="page-hero-label">Service</p>
           <h1 class="page-hero-title">転職サービス</h1>
         </div>
@@ -185,6 +185,7 @@
       <div class="page-hero" style="background-image:url('img_about.jpg')">
         <div class="page-hero-overlay"></div>
         <div class="page-hero-content">
+          <p class="breadcrumb"><a href="#" data-page="home">HOME</a> &gt; サービス &gt; 人事業務支援</p>
           <p class="page-hero-label">HR Support</p>
           <h1 class="page-hero-title">人事業務支援サービス</h1>
         </div>
@@ -222,6 +223,7 @@
       <div class="page-hero" style="background-image:url('img_voice.jpg')">
         <div class="page-hero-overlay"></div>
         <div class="page-hero-content">
+          <p class="breadcrumb"><a href="#" data-page="home">HOME</a> &gt; サービス &gt; 学生就活支援</p>
           <p class="page-hero-label">For Students</p>
           <h1 class="page-hero-title">学生就活支援サービス</h1>
         </div>
@@ -250,6 +252,7 @@
       <div class="page-hero" style="background-image:url('img_ai.jpg')">
         <div class="page-hero-overlay"></div>
         <div class="page-hero-content">
+          <p class="breadcrumb"><a href="#" data-page="home">HOME</a> &gt; 求人を探す</p>
           <p class="page-hero-label">Jobs</p>
           <h1 class="page-hero-title">求人を探す</h1>
         </div>
@@ -319,11 +322,11 @@
 
           </div>
 
-          <!-- すべての求人（2カラム構成） -->
+          <!-- すべての求人（jobmatch風2カラム） -->
           <div class="tab-content hidden" id="tab-all">
             <div class="all-jobs-layout">
 
-              <!-- 左：絞り込みパネル -->
+              <!-- 左：絞り込み＋AIマッチング -->
               <div class="filter-panel">
                 <div class="filter-header">
                   <span class="filter-title">絞り込み</span>
@@ -331,13 +334,8 @@
                 </div>
 
                 <div class="filter-section">
-                  <label class="filter-label">キーワード</label>
-                  <input type="text" class="search-input" id="searchKeyword" placeholder="職種・スキルなど">
-                </div>
-
-                <div class="filter-section">
                   <label class="filter-label">職種</label>
-                  <select class="search-select" id="searchCategory">
+                  <select class="search-select" id="searchCategory" onchange="applyFilter()">
                     <option value="">すべての職種</option>
                     <option value="営業">営業</option>
                     <option value="事務">事務・管理</option>
@@ -352,7 +350,7 @@
 
                 <div class="filter-section">
                   <label class="filter-label">都道府県</label>
-                  <select class="search-select" id="searchArea">
+                  <select class="search-select" id="searchArea" onchange="applyFilter()">
                     <option value="">すべての地域</option>
                     <option value="東京">東京都</option>
                     <option value="神奈川">神奈川県</option>
@@ -369,7 +367,7 @@
 
                 <div class="filter-section">
                   <label class="filter-label">雇用形態</label>
-                  <select class="search-select" id="searchEmployment">
+                  <select class="search-select" id="searchEmployment" onchange="applyFilter()">
                     <option value="">すべて</option>
                     <option value="正社員">正社員</option>
                     <option value="契約社員">契約社員</option>
@@ -380,36 +378,163 @@
                 <div class="filter-section">
                   <label class="filter-label">こだわり条件</label>
                   <div class="filter-checks">
-                    <label class="tag-check"><input type="checkbox" value="リモート"> リモートワーク可</label>
-                    <label class="tag-check"><input type="checkbox" value="土日休み"> 土日休み</label>
-                    <label class="tag-check"><input type="checkbox" value="未経験"> 未経験OK</label>
-                    <label class="tag-check"><input type="checkbox" value="40代"> 40歳以上歓迎</label>
-                    <label class="tag-check"><input type="checkbox" value="転勤なし"> 転勤なし</label>
+                    <label class="tag-check"><input type="checkbox" value="リモート" onchange="applyFilter()"> リモートワーク可</label>
+                    <label class="tag-check"><input type="checkbox" value="土日休み" onchange="applyFilter()"> 土日休み</label>
+                    <label class="tag-check"><input type="checkbox" value="未経験" onchange="applyFilter()"> 未経験OK</label>
+                    <label class="tag-check"><input type="checkbox" value="40代" onchange="applyFilter()"> 40歳以上歓迎</label>
+                    <label class="tag-check"><input type="checkbox" value="転勤なし" onchange="applyFilter()"> 転勤なし</label>
                   </div>
                 </div>
-
-                <button class="btn-primary search-btn" id="searchBtn" style="width:100%;justify-content:center;margin-top:0.5rem">求人を検索する</button>
 
                 <!-- AIマッチング -->
                 <div class="ai-panel">
                   <div class="ai-panel-title">✦ AIマッチング</div>
-                  <p class="ai-panel-sub">職務経歴を入力すると、AIがマッチ度の高い求人を抽出します。個人情報は不要です。</p>
-                  <textarea class="ai-textarea" id="aiInput" rows="4" placeholder="例）営業職10年。IT業界での法人営業経験あり。年収500万円希望。リモート可の職場希望。"></textarea>
-                  <p class="ai-panel-note">※氏名・住所・現在の会社名は入力しないでください</p>
-                  <button class="btn-primary ai-btn" id="aiBtn" style="width:100%;justify-content:center;margin-top:0.75rem">AIマッチング開始</button>
+                  <p class="ai-panel-sub">履歴書・職務経歴書をアップロード、またはテキストで入力するとAIがマッチ度の高い求人を抽出します。</p>
+
+                  <!-- ファイルアップロード -->
+                  <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                    <div class="upload-icon">📂</div>
+                    <div class="upload-text">
+                      <strong>クリックまたはドラッグ＆ドロップ</strong><br>
+                      <span>PDF・Word・テキストに対応</span>
+                    </div>
+                    <input type="file" id="fileInput" style="display:none" accept=".pdf,.docx,.txt" multiple>
+                  </div>
+                  <div id="fileList" class="file-list"></div>
+
+                  <div class="divider-or">またはテキストで直接入力</div>
+                  <textarea class="ai-textarea" id="resumeText" rows="4" placeholder="スキルや経験を自由に入力&#10;例）営業職10年。IT業界での法人営業経験あり。年収500万円希望。"></textarea>
+
+                  <div class="filter-section" style="margin-top:0.75rem">
+                    <label class="filter-label">希望条件（任意）</label>
+                    <textarea class="ai-textarea" id="userWishes" rows="3" placeholder="例）&#10;・希望年収：500万円以上&#10;・働き方：リモート希望&#10;・転職時期：3ヶ月以内"></textarea>
+                  </div>
+
+                  <!-- プログレスバー -->
+                  <div class="progress-wrap hidden" id="progressWrap">
+                    <div class="progress-label" id="progressLabel">処理中...</div>
+                    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+                  </div>
+
+                  <button class="btn-primary ai-btn" id="aiBtn" style="width:100%;justify-content:center;margin-top:0.75rem">
+                    ✦ AIマッチング開始
+                  </button>
+                  <p class="ai-panel-note">※個人情報（氏名・住所・会社名）は入力しないでください</p>
                 </div>
               </div>
 
-              <!-- 右：求人一覧エリア -->
+              <!-- 右：求人一覧 -->
               <div class="jobs-results">
-                <div class="search-placeholder">
-                  <div class="search-placeholder-icon">🔍</div>
-                  <p>条件を入力して「求人を検索する」を押してください</p>
-                  <p style="font-size:12px;color:#aaa;margin-top:0.5rem">※検索するとAIマッチングシステムへ移動します</p>
+                <div class="jobs-results-header">
+                  <span class="jobs-count" id="jobsCount">— 件の求人</span>
+                  <select class="search-select" id="sortOrder" style="width:auto;font-size:12px" onchange="applyFilter()">
+                    <option value="new">更新日順（新しい順）</option>
+                    <option value="old">更新日順（古い順）</option>
+                    <option value="salary">年収が高い順</option>
+                  </select>
+                </div>
+
+                <!-- 仮の求人カード -->
+                <div id="jobsList">
+                  <div class="job-card-new">
+                    <div class="job-card-header">
+                      <span class="badge-normal">一般求人</span>
+                      <span class="job-card-date">2025.05.20</span>
+                    </div>
+                    <div class="job-card-title">営業マネージャー / IT系メーカー（東京）</div>
+                    <div class="job-card-meta">
+                      <span>📍 東京都</span>
+                      <span>💰 年収 450〜600万円</span>
+                      <span>👔 正社員</span>
+                    </div>
+                    <div class="job-card-tags">
+                      <span class="job-tag">リモートワーク可</span>
+                      <span class="job-tag">土日休み</span>
+                    </div>
+                    <button class="btn-detail" onclick="showJobDetail(1)">詳細を見る</button>
+                  </div>
+
+                  <div class="job-card-new">
+                    <div class="job-card-header">
+                      <span class="badge-normal">一般求人</span>
+                      <span class="job-card-date">2025.05.18</span>
+                    </div>
+                    <div class="job-card-title">経理・財務担当 / 大手商社グループ（神奈川）</div>
+                    <div class="job-card-meta">
+                      <span>📍 神奈川県</span>
+                      <span>💰 年収 400〜550万円</span>
+                      <span>👔 正社員</span>
+                    </div>
+                    <div class="job-card-tags">
+                      <span class="job-tag">土日休み</span>
+                      <span class="job-tag">転勤なし</span>
+                    </div>
+                    <button class="btn-detail" onclick="showJobDetail(2)">詳細を見る</button>
+                  </div>
+
+                  <div class="job-card-new">
+                    <div class="job-card-header">
+                      <span class="badge-normal">一般求人</span>
+                      <span class="job-card-date">2025.05.15</span>
+                    </div>
+                    <div class="job-card-title">人事・採用担当 / ベンチャー企業（東京・リモート可）</div>
+                    <div class="job-card-meta">
+                      <span>📍 東京都</span>
+                      <span>💰 年収 380〜500万円</span>
+                      <span>👔 正社員</span>
+                    </div>
+                    <div class="job-card-tags">
+                      <span class="job-tag">リモートワーク可</span>
+                      <span class="job-tag">未経験OK</span>
+                    </div>
+                    <button class="btn-detail" onclick="showJobDetail(3)">詳細を見る</button>
+                  </div>
+
+                  <div class="jobs-db-note">
+                    ※現在表示しているのはサンプルデータです。<br>
+                    DB連携後に実際の求人（約10,000件）が表示されます。
+                  </div>
+                </div>
+
+                <!-- ページング -->
+                <div class="pagination" id="pagination">
+                  <button class="page-btn active">1</button>
+                  <button class="page-btn">2</button>
+                  <button class="page-btn">3</button>
+                  <span>...</span>
+                  <button class="page-btn">100</button>
                 </div>
               </div>
-
             </div>
+          </div>
+
+          <!-- 詳細モーダル -->
+          <div class="modal-overlay" id="jobDetailModal">
+            <div class="job-detail-modal">
+              <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">求人詳細</h2>
+                <button class="modal-close" onclick="closeJobDetail()">✕</button>
+              </div>
+              <div class="modal-body" id="modalBody">
+                <div class="detail-section">
+                  <div class="detail-label">仕事内容</div>
+                  <div class="detail-text" id="modalDesc">※DB連携後に詳細情報が表示されます。</div>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-label">応募資格</div>
+                  <div class="detail-text" id="modalReq">※DB連携後に詳細情報が表示されます。</div>
+                </div>
+                <div class="detail-section">
+                  <div class="detail-label">勤務地・給与</div>
+                  <div class="detail-text" id="modalInfo">※DB連携後に詳細情報が表示されます。</div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <a href="#" data-page="contact" class="btn-primary" onclick="closeJobDetail()">この求人について相談する</a>
+              </div>
+            </div>
+          </div>
+
           </div>
         </div>
       </div>
@@ -421,6 +546,7 @@
       <div class="page-hero" style="background-image:url('img_column.jpg')">
         <div class="page-hero-overlay"></div>
         <div class="page-hero-content">
+          <p class="breadcrumb"><a href="#" data-page="home">HOME</a> &gt; コラム</p>
           <p class="page-hero-label">Column</p>
           <h1 class="page-hero-title">転職コラム</h1>
         </div>
@@ -443,6 +569,7 @@
       <div class="page-hero" style="background-image:url('img_about2.jpg')">
         <div class="page-hero-overlay"></div>
         <div class="page-hero-content">
+          <p class="breadcrumb"><a href="#" data-page="home">HOME</a> &gt; 会社案内</p>
           <p class="page-hero-label">About</p>
           <h1 class="page-hero-title">会社案内</h1>
         </div>
@@ -479,6 +606,7 @@
       <div class="page-hero" style="background-image:url('img_client.jpg')">
         <div class="page-hero-overlay"></div>
         <div class="page-hero-content">
+          <p class="breadcrumb"><a href="#" data-page="home">HOME</a> &gt; 企業の方へ</p>
           <p class="page-hero-label">For Companies</p>
           <h1 class="page-hero-title">企業の方へ</h1>
         </div>
@@ -516,6 +644,7 @@
       <div class="page-hero" style="background-image:url('img_contact.jpg')">
         <div class="page-hero-overlay"></div>
         <div class="page-hero-content">
+          <p class="breadcrumb"><a href="#" data-page="home">HOME</a> &gt; 無料相談・お問い合わせ</p>
           <p class="page-hero-label">Contact</p>
           <h1 class="page-hero-title">無料相談・お問い合わせ</h1>
         </div>

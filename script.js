@@ -8,68 +8,45 @@ document.addEventListener('DOMContentLoaded', function() {
   function showPage(targetPage) {
     if (!targetPage || targetPage === currentPage || isAnimating) return;
     if (pages.indexOf(targetPage) === -1) return;
-
     isAnimating = true;
 
     var currentEl = document.getElementById('page-' + currentPage);
     var targetEl  = document.getElementById('page-' + targetPage);
+    if (!currentEl || !targetEl) { isAnimating = false; return; }
 
-    if (!currentEl || !targetEl) {
-      isAnimating = false;
-      return;
-    }
+    currentEl.style.transition = 'opacity 0.2s ease';
+    currentEl.style.opacity = '0';
 
-    var currentIdx = pages.indexOf(currentPage);
-    var targetIdx  = pages.indexOf(targetPage);
-    var goingForward = targetIdx > currentIdx;
+    setTimeout(function() {
+      currentEl.style.display = 'none';
+      currentEl.style.opacity = '';
+      currentEl.style.transition = '';
 
-    // ターゲットを準備
-    targetEl.style.display = 'block';
-    targetEl.style.position = 'fixed';
-    targetEl.style.top = '64px';
-    targetEl.style.left = '0';
-    targetEl.style.width = '100%';
-    targetEl.style.zIndex = '50';
-    targetEl.style.transform = goingForward ? 'translateX(100%)' : 'translateX(-100%)';
-    targetEl.style.transition = 'transform 0.35s ease';
+      targetEl.style.opacity = '0';
+      targetEl.style.display = 'block';
+      targetEl.style.transition = 'opacity 0.25s ease';
 
-    // 少し待ってからアニメーション開始
-    requestAnimationFrame(function() {
+      window.scrollTo(0, 0);
+
       requestAnimationFrame(function() {
-        targetEl.style.transform = 'translateX(0)';
-
-        setTimeout(function() {
-          // アニメーション完了
-          currentEl.style.display = 'none';
-
-          targetEl.style.position = '';
-          targetEl.style.top = '';
-          targetEl.style.left = '';
-          targetEl.style.width = '';
-          targetEl.style.zIndex = '';
-          targetEl.style.transform = '';
-          targetEl.style.transition = '';
-
-          currentPage = targetPage;
-          isAnimating = false;
-
-          window.scrollTo(0, 0);
-          updateNavActive();
-
-          if (targetPage === 'column') loadNoteArticles();
-
-        }, 380);
+        requestAnimationFrame(function() {
+          targetEl.style.opacity = '1';
+          setTimeout(function() {
+            targetEl.style.opacity = '';
+            targetEl.style.transition = '';
+            currentPage = targetPage;
+            isAnimating = false;
+            updateNavActive();
+            if (targetPage === 'column') loadNoteArticles();
+          }, 270);
+        });
       });
-    });
+    }, 220);
   }
 
   function updateNavActive() {
     document.querySelectorAll('[data-page]').forEach(function(el) {
-      if (el.dataset.page === currentPage) {
-        el.classList.add('active');
-      } else {
-        el.classList.remove('active');
-      }
+      el.classList.toggle('active', el.dataset.page === currentPage);
     });
   }
 
@@ -78,30 +55,24 @@ document.addEventListener('DOMContentLoaded', function() {
     var link = e.target.closest('[data-page]');
     if (!link) return;
     e.preventDefault();
-    var page = link.dataset.page;
     document.getElementById('navMobile').classList.remove('open');
-    showPage(page);
+    showPage(link.dataset.page);
   });
 
   // ===== ハンバーガーメニュー =====
   var hamburger = document.getElementById('hamburger');
-  var navMobile = document.getElementById('navMobile');
   if (hamburger) {
     hamburger.addEventListener('click', function() {
-      navMobile.classList.toggle('open');
+      document.getElementById('navMobile').classList.toggle('open');
     });
   }
 
   // ===== 求人タブ切替 =====
   document.querySelectorAll('.tab').forEach(function(tab) {
     tab.addEventListener('click', function() {
-      document.querySelectorAll('.tab').forEach(function(t) {
-        t.classList.remove('active');
-      });
+      document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
       tab.classList.add('active');
-      document.querySelectorAll('.tab-content').forEach(function(c) {
-        c.classList.add('hidden');
-      });
+      document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.add('hidden'); });
       var target = document.getElementById('tab-' + tab.dataset.tab);
       if (target) target.classList.remove('hidden');
     });
@@ -109,12 +80,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // ===== プレミアム「すべて見る」 =====
   var premiumMoreBtn = document.getElementById('premiumMoreBtn');
-  var premiumMore = document.getElementById('premiumMore');
-  var premiumMoreWrap = document.getElementById('premiumMoreWrap');
   if (premiumMoreBtn) {
     premiumMoreBtn.addEventListener('click', function() {
-      if (premiumMore) premiumMore.classList.remove('hidden');
-      if (premiumMoreWrap) premiumMoreWrap.style.display = 'none';
+      var more = document.getElementById('premiumMore');
+      var wrap = document.getElementById('premiumMoreWrap');
+      if (more) more.classList.remove('hidden');
+      if (wrap) wrap.style.display = 'none';
     });
   }
 
@@ -122,8 +93,9 @@ document.addEventListener('DOMContentLoaded', function() {
   var aiBtn = document.getElementById('aiBtn');
   if (aiBtn) {
     aiBtn.addEventListener('click', function() {
-      var input = document.getElementById('aiInput');
-      if (!input || !input.value.trim()) {
+      var resumeText = document.getElementById('resumeText');
+      var input = resumeText ? resumeText.value.trim() : '';
+      if (!input) {
         alert('職務経歴・スキル・希望条件を入力してください。');
         return;
       }
@@ -131,45 +103,56 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // ===== 求人検索ボタン =====
-  var searchBtn = document.getElementById('searchBtn');
+  // ===== 絞り込みリセット =====
   var searchReset = document.getElementById('searchReset');
-
-  if (searchBtn) {
-    searchBtn.addEventListener('click', function() {
-      var keyword    = document.getElementById('searchKeyword') ? document.getElementById('searchKeyword').value.trim() : '';
-      var category   = document.getElementById('searchCategory') ? document.getElementById('searchCategory').value : '';
-      var area       = document.getElementById('searchArea') ? document.getElementById('searchArea').value : '';
-      var employment = document.getElementById('searchEmployment') ? document.getElementById('searchEmployment').value : '';
-      var tags = [];
-      document.querySelectorAll('.tag-check input:checked').forEach(function(el) {
-        tags.push(el.value);
+  if (searchReset) {
+    searchReset.addEventListener('click', function() {
+      ['searchCategory','searchArea','searchEmployment'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.value = '';
       });
-
-      var params = new URLSearchParams();
-      if (keyword)    params.set('q', keyword);
-      if (category)   params.set('category', category);
-      if (area)       params.set('area', area);
-      if (employment) params.set('employment', employment);
-      if (tags.length) params.set('tags', tags.join(','));
-
-      var url = 'https://jobmatch-4jzs.onrender.com/job_search.html';
-      if (params.toString()) url += '?' + params.toString();
-      window.open(url, '_blank');
+      document.querySelectorAll('.tag-check input').forEach(function(el) { el.checked = false; });
     });
   }
 
-  if (searchReset) {
-    searchReset.addEventListener('click', function() {
-      if (document.getElementById('searchKeyword'))    document.getElementById('searchKeyword').value = '';
-      if (document.getElementById('searchCategory'))   document.getElementById('searchCategory').value = '';
-      if (document.getElementById('searchArea'))       document.getElementById('searchArea').value = '';
-      if (document.getElementById('searchEmployment')) document.getElementById('searchEmployment').value = '';
-      document.querySelectorAll('.tag-check input').forEach(function(el) { el.checked = false; });
-      var results = document.getElementById('searchResults');
-      if (results) {
-        results.innerHTML = '<div class="search-placeholder"><div class="search-placeholder-icon">🔍</div><p>条件を入力して「求人を検索する」を押してください</p><p style="font-size:12px;color:#aaa;margin-top:0.5rem">※検索するとAIマッチングシステムへ移動します</p></div>';
-      }
+  // ===== ファイルアップロードUI =====
+  var fileInput = document.getElementById('fileInput');
+  if (fileInput) {
+    fileInput.addEventListener('change', function() {
+      var fileList = document.getElementById('fileList');
+      if (!fileList) return;
+      fileList.innerHTML = Array.from(this.files).map(function(f) {
+        return '<div style="font-size:12px;color:#555;padding:4px 0">📄 ' + f.name + '</div>';
+      }).join('');
+    });
+  }
+
+  // ===== 詳細モーダル =====
+  window.showJobDetail = function(id) {
+    var modal = document.getElementById('jobDetailModal');
+    var titles = {
+      1: '営業マネージャー / IT系メーカー（東京）',
+      2: '経理・財務担当 / 大手商社グループ（神奈川）',
+      3: '人事・採用担当 / ベンチャー企業（東京・リモート可）'
+    };
+    var title = document.getElementById('modalTitle');
+    if (title) title.textContent = titles[id] || '求人詳細';
+    ['modalDesc','modalReq','modalInfo'].forEach(function(elId) {
+      var el = document.getElementById(elId);
+      if (el) el.textContent = '※DB連携後に詳細情報が表示されます。';
+    });
+    if (modal) modal.classList.add('open');
+  };
+
+  window.closeJobDetail = function() {
+    var modal = document.getElementById('jobDetailModal');
+    if (modal) modal.classList.remove('open');
+  };
+
+  var jobDetailModal = document.getElementById('jobDetailModal');
+  if (jobDetailModal) {
+    jobDetailModal.addEventListener('click', function(e) {
+      if (e.target === jobDetailModal) window.closeJobDetail();
     });
   }
 
@@ -180,19 +163,14 @@ document.addEventListener('DOMContentLoaded', function() {
     var el = document.getElementById('noteCards');
     if (!el) return;
 
-    var NOTE_PROXY = 'https://api.rss2json.com/v1/api.json?rss_url=';
-    var NOTE_RSS   = 'https://note.com/abilitystaff/rss';
-
-    fetch(NOTE_PROXY + encodeURIComponent(NOTE_RSS))
+    fetch('https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent('https://note.com/abilitystaff/rss'))
       .then(function(res) { return res.json(); })
       .then(function(data) {
         if (!data.items || !data.items.length) throw new Error();
         noteLoaded = true;
         el.innerHTML = data.items.slice(0, 6).map(function(item) {
           var d = new Date(item.pubDate);
-          var dateStr = d.getFullYear() + '.' +
-            String(d.getMonth()+1).padStart(2,'0') + '.' +
-            String(d.getDate()).padStart(2,'0');
+          var dateStr = d.getFullYear() + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + String(d.getDate()).padStart(2,'0');
           return '<div class="note-card"><a href="' + item.link + '" target="_blank" rel="noopener">' +
             '<div class="note-date">' + dateStr + '</div>' +
             '<div class="note-title">' + item.title + '</div>' +
