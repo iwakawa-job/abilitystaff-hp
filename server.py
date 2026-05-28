@@ -84,7 +84,7 @@ def load_job_detail_from_db(job_id):
                    j.description, j.requirements, j.salary, j.employment,
                    j.prefecture, j.tags, j.updated
             FROM jobs j
-            WHERE j.id = %s AND j.is_public = TRUE;
+            WHERE j.id = %s;
         """, (job_id,))
         row = cur.fetchone()
         cur.close()
