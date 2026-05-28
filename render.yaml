@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: abilitystaff-hp
+    runtime: python
+    buildCommand: pip install python-docx pymupdf openpyxl xlrd docx2txt psycopg2-binary
+    startCommand: python server.py
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false

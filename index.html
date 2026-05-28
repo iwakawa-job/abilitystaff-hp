@@ -341,14 +341,6 @@
                   <label class="filter-label">職種</label>
                   <select class="search-select" id="searchCategory" onchange="applyFilter()">
                     <option value="">すべての職種</option>
-                    <option value="営業">営業</option>
-                    <option value="事務">事務・管理</option>
-                    <option value="IT">IT・エンジニア</option>
-                    <option value="マーケティング">マーケティング</option>
-                    <option value="人事">人事・採用</option>
-                    <option value="経理">経理・財務</option>
-                    <option value="企画">企画・コンサル</option>
-                    <option value="製造">製造・技術</option>
                   </select>
                 </div>
 
@@ -356,16 +348,6 @@
                   <label class="filter-label">都道府県</label>
                   <select class="search-select" id="searchArea" onchange="applyFilter()">
                     <option value="">すべての地域</option>
-                    <option value="東京">東京都</option>
-                    <option value="神奈川">神奈川県</option>
-                    <option value="埼玉">埼玉県</option>
-                    <option value="千葉">千葉県</option>
-                    <option value="関東">関東（その他）</option>
-                    <option value="大阪">大阪府</option>
-                    <option value="関西">関西（その他）</option>
-                    <option value="中部">中部</option>
-                    <option value="九州">九州・沖縄</option>
-                    <option value="北海道">北海道・東北</option>
                   </select>
                 </div>
 
@@ -382,11 +364,17 @@
                 <div class="filter-section">
                   <label class="filter-label">こだわり条件</label>
                   <div class="filter-checks">
-                    <label class="tag-check"><input type="checkbox" value="リモート" onchange="applyFilter()"> リモートワーク可</label>
+                    <label class="tag-check"><input type="checkbox" value="リモートワークOK" onchange="applyFilter()"> リモートワーク可</label>
+                    <label class="tag-check"><input type="checkbox" value="副業OK" onchange="applyFilter()"> 副業OK</label>
                     <label class="tag-check"><input type="checkbox" value="土日休み" onchange="applyFilter()"> 土日休み</label>
-                    <label class="tag-check"><input type="checkbox" value="未経験" onchange="applyFilter()"> 未経験OK</label>
-                    <label class="tag-check"><input type="checkbox" value="40代" onchange="applyFilter()"> 40歳以上歓迎</label>
                     <label class="tag-check"><input type="checkbox" value="転勤なし" onchange="applyFilter()"> 転勤なし</label>
+                    <label class="tag-check"><input type="checkbox" value="未経験OK" onchange="applyFilter()"> 未経験OK</label>
+                    <label class="tag-check"><input type="checkbox" value="外国籍OK" onchange="applyFilter()"> 外国籍OK</label>
+                    <label class="tag-check"><input type="checkbox" value="40歳以上推薦OK" onchange="applyFilter()"> 40歳以上推薦OK</label>
+                    <label class="tag-check"><input type="checkbox" value="説明会実施済み" onchange="applyFilter()"> 説明会実施済み</label>
+                    <label class="tag-check"><input type="checkbox" value="高書類通過率" onchange="applyFilter()"> 高書類通過率</label>
+                    <label class="tag-check"><input type="checkbox" value="高内定率" onchange="applyFilter()"> 高内定率</label>
+                    <label class="tag-check"><input type="checkbox" value="大量募集" onchange="applyFilter()"> 大量募集</label>
                   </div>
                 </div>
 
