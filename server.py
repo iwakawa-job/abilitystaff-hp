@@ -31,7 +31,7 @@ def get_db_connection():
         return None
 
 def load_jobs_from_db():
-    """DBから求人データを軽量版で取得（一覧表示用・公開求人のみ）"""
+    """DBから求人データを軽量版で取得（jobmatchと同じ構造）"""
     conn = get_db_connection()
     if not conn:
         return None
@@ -41,9 +41,11 @@ def load_jobs_from_db():
             SELECT j.id, j.company, j.category, j.subcategory, j.title,
                    LEFT(j.description, 120), j.salary, j.employment,
                    j.prefecture, j.tags, j.updated,
+                   a.age, a.job_change_count, a.gender, a.note,
                    LEFT(j.requirements, 200)
             FROM jobs j
-            ORDER BY j.updated DESC;
+            LEFT JOIN job_agent_info a ON j.id = a.job_id
+            ORDER BY j.id;
         """)
         rows = cur.fetchall()
         jobs = []
@@ -60,7 +62,13 @@ def load_jobs_from_db():
                 'prefecture': row[8] or '',
                 'tags': json.loads(row[9]) if row[9] else [],
                 'updated': str(row[10]) if row[10] else '',
-                'requirements': row[11] or '',
+                'agent_condition': {
+                    'age': row[11] or '',
+                    'job_change_count': row[12] or '',
+                    'gender': row[13] or '',
+                    'note': row[14] or '',
+                },
+                'requirements': row[15] or '',
             }
             jobs.append(job)
         cur.close()
@@ -73,7 +81,7 @@ def load_jobs_from_db():
         return None
 
 def load_job_detail_from_db(job_id):
-    """DBから1件の詳細データを取得（公開求人のみ）"""
+    """DBから1件の詳細データを取得（jobmatchと同じ構造）"""
     conn = get_db_connection()
     if not conn:
         return None
@@ -82,8 +90,11 @@ def load_job_detail_from_db(job_id):
         cur.execute("""
             SELECT j.id, j.company, j.category, j.subcategory, j.title,
                    j.description, j.requirements, j.salary, j.employment,
-                   j.prefecture, j.tags, j.updated
+                   j.prefecture, j.tags, j.updated,
+                   a.gender, a.age, a.foreign_national, a.job_change_count,
+                   a.headcount, a.fee, a.fee_definition, a.refund, a.note, a.other
             FROM jobs j
+            LEFT JOIN job_agent_info a ON j.id = a.job_id
             WHERE j.id = %s;
         """, (job_id,))
         row = cur.fetchone()
@@ -91,7 +102,7 @@ def load_job_detail_from_db(job_id):
         conn.close()
         if not row:
             return None
-        return {
+        job = {
             'id': str(row[0]),
             'company': row[1] or '',
             'category': row[2] or '',
@@ -104,7 +115,20 @@ def load_job_detail_from_db(job_id):
             'prefecture': row[9] or '',
             'tags': json.loads(row[10]) if row[10] else [],
             'updated': str(row[11]) if row[11] else '',
+            'agent': {
+                'gender': row[12] or '',
+                'age': row[13] or '',
+                'foreign_national': row[14] or '',
+                'job_change_count': row[15] or '',
+                'headcount': row[16] or '',
+                'fee': row[17] or '',
+                'fee_definition': row[18] or '',
+                'refund': row[19] or '',
+                'note': row[20] or '',
+                'other': row[21] or '',
+            }
         }
+        return job
     except Exception as e:
         print(f'DB詳細読み込みエラー: {e}')
         if conn:

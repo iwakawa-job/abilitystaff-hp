@@ -417,6 +417,7 @@
 
               <!-- 右：求人一覧 -->
               <div class="jobs-results">
+                <div class="match-banner hidden" id="matchBanner"></div>
                 <div class="jobs-results-header">
                   <span class="jobs-count" id="jobsCount">— 件の求人</span>
                   <select class="search-select" id="sortOrder" style="width:auto;font-size:12px" onchange="applyFilter()">
@@ -508,18 +509,7 @@
                 <button class="modal-close" onclick="closeJobDetail()">✕</button>
               </div>
               <div class="modal-body" id="modalBody">
-                <div class="detail-section">
-                  <div class="detail-label">仕事内容</div>
-                  <div class="detail-text" id="modalDesc">※DB連携後に詳細情報が表示されます。</div>
-                </div>
-                <div class="detail-section">
-                  <div class="detail-label">応募資格</div>
-                  <div class="detail-text" id="modalReq">※DB連携後に詳細情報が表示されます。</div>
-                </div>
-                <div class="detail-section">
-                  <div class="detail-label">勤務地・給与</div>
-                  <div class="detail-text" id="modalInfo">※DB連携後に詳細情報が表示されます。</div>
-                </div>
+                <div style="text-align:center;padding:2rem;color:#888">読み込み中...</div>
               </div>
               <div class="modal-footer">
                 <a href="#" data-page="contact" class="btn-primary" onclick="closeJobDetail()">この求人について相談する</a>
