@@ -100,12 +100,94 @@ document.addEventListener('DOMContentLoaded', function() {
   var currentJobPage = 1;
 
   function initJobsPage() {
+    if (!premiumLoaded) loadPremiumJobsFromDB();
     if (jobsLoaded) {
       renderJobs();
       return;
     }
     loadJobsFromDB();
   }
+
+  // ===== プレミアム求人 =====
+  var premiumLoaded = false;
+
+  function loadPremiumJobsFromDB() {
+    var el = document.getElementById('premiumList');
+    var moreWrap = document.getElementById('premiumMoreWrap');
+    var moreEl = document.getElementById('premiumMore');
+    if (!el) return;
+
+    el.innerHTML = '<div class="search-placeholder"><div class="search-placeholder-icon">⏳</div><p>プレミアム求人を読み込み中...</p></div>';
+    if (moreWrap) moreWrap.style.display = 'none';
+    if (moreEl) moreEl.classList.add('hidden');
+
+    fetch('/api/premium_jobs')
+      .then(function(res) { return res.json(); })
+      .then(function(jobs) {
+        premiumLoaded = true;
+        if (!jobs.length) {
+          el.innerHTML = '<div class="search-placeholder"><p>現在プレミアム求人はありません。</p></div>';
+          return;
+        }
+        // 最初の3件
+        var first = jobs.slice(0, 3);
+        var rest = jobs.slice(3);
+        el.innerHTML = first.map(function(job) { return renderPremiumCard(job); }).join('');
+        if (rest.length > 0) {
+          if (moreEl) moreEl.innerHTML = rest.map(function(job) { return renderPremiumCard(job); }).join('');
+          if (moreWrap) moreWrap.style.display = '';
+        }
+      })
+      .catch(function(err) {
+        console.error('プレミアム求人取得エラー:', err);
+        el.innerHTML = '<div class="search-placeholder"><p>プレミアム求人の取得に失敗しました。</p></div>';
+      });
+  }
+
+  function renderPremiumCard(job) {
+    return '<div class="job-card">' +
+      '<div class="job-icon">🏢</div>' +
+      '<div class="job-body">' +
+        '<div class="job-badges"><span class="badge-premium">プレミアム</span></div>' +
+        '<div class="job-title">' + escapeHtml(job.title) + '</div>' +
+        '<div class="job-detail">' + escapeHtml((job.company_description || '').slice(0, 60)) + '</div>' +
+        '<div class="job-meta">' +
+          '<span>📍 ' + escapeHtml(job.location) + '</span>' +
+          '<span>💰 ' + escapeHtml(job.salary) + '</span>' +
+          '<span>👔 ' + escapeHtml(job.employment) + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<button class="btn-detail" onclick="showPremiumDetail(' + job.id + ')">詳細を見る</button>' +
+    '</div>';
+  }
+
+  window.showPremiumDetail = function(id) {
+    fetch('/api/premium_jobs')
+      .then(function(res) { return res.json(); })
+      .then(function(jobs) {
+        var job = jobs.find(function(j) { return j.id === id; });
+        if (!job) return;
+        var modal = document.getElementById('jobDetailModal');
+        if (!modal) return;
+        document.getElementById('modalTitle').textContent = job.title;
+        document.getElementById('modalBody').innerHTML =
+          '<div class="detail-section">' +
+            '<div class="detail-label">基本情報</div>' +
+            '<div class="detail-text">' +
+              escapeHtml(job.company_description) + '<br>' +
+              '勤務地：' + escapeHtml(job.location) + '<br>' +
+              '給与：' + escapeHtml(job.salary) + '<br>' +
+              '雇用形態：' + escapeHtml(job.employment) +
+            '</div>' +
+          '</div>' +
+          (job.description ? '<div class="detail-section"><div class="detail-label">仕事内容</div><div class="detail-text">' + escapeHtml(job.description).replace(/\n/g, '<br>') + '</div></div>' : '') +
+          (job.requirements ? '<div class="detail-section"><div class="detail-label">応募資格</div><div class="detail-text">' + escapeHtml(job.requirements).replace(/\n/g, '<br>') + '</div></div>' : '') +
+          (job.appeal ? '<div class="detail-section"><div class="detail-label">アピールポイント</div><div class="detail-text">' + escapeHtml(job.appeal).replace(/\n/g, '<br>') + '</div></div>' : '') +
+          (job.conditions ? '<div class="detail-section"><div class="detail-label">勤務条件</div><div class="detail-text">' + escapeHtml(job.conditions).replace(/\n/g, '<br>') + '</div></div>' : '') +
+          (job.access ? '<div class="detail-section"><div class="detail-label">アクセス</div><div class="detail-text">' + escapeHtml(job.access) + '</div></div>' : '');
+        modal.classList.add('open');
+      });
+  };
 
   function loadJobsFromDB() {
     var resultsEl = document.getElementById('jobsList');

@@ -80,6 +80,50 @@ def load_jobs_from_db():
             conn.close()
         return None
 
+def load_premium_jobs_from_db():
+    """プレミアム求人一覧を取得"""
+    conn = get_db_connection()
+    if not conn:
+        return None
+    try:
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT id, title, company_description, location, salary,
+                   employment, description, requirements, appeal,
+                   conditions, access, other, is_active, created_at
+            FROM premium_jobs
+            WHERE is_active = TRUE
+            ORDER BY id DESC;
+        """)
+        rows = cur.fetchall()
+        jobs = []
+        for row in rows:
+            job = {
+                'id': row[0],
+                'title': row[1] or '',
+                'company_description': row[2] or '',
+                'location': row[3] or '',
+                'salary': row[4] or '',
+                'employment': row[5] or '',
+                'description': row[6] or '',
+                'requirements': row[7] or '',
+                'appeal': row[8] or '',
+                'conditions': row[9] or '',
+                'access': row[10] or '',
+                'other': row[11] or '',
+                'is_active': row[12],
+                'created_at': str(row[13]) if row[13] else '',
+            }
+            jobs.append(job)
+        cur.close()
+        conn.close()
+        return jobs
+    except Exception as e:
+        print(f'プレミアム求人取得エラー: {e}')
+        if conn:
+            conn.close()
+        return None
+
 def load_job_detail_from_db(job_id):
     """DBから1件の詳細データを取得（jobmatchと同じ構造）"""
     conn = get_db_connection()
@@ -287,6 +331,18 @@ class AbilityStaffHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_error(503, 'DATABASE_URL not set')
                 return
             jobs = load_jobs_from_db()
+            if jobs is None:
+                self.send_error(500, 'DB connection failed')
+                return
+            self.send_json(jobs)
+            return
+
+        # プレミアム求人一覧API
+        if self.path == '/api/premium_jobs':
+            if not DATABASE_URL:
+                self.send_error(503, 'DATABASE_URL not set')
+                return
+            jobs = load_premium_jobs_from_db()
             if jobs is None:
                 self.send_error(500, 'DB connection failed')
                 return
