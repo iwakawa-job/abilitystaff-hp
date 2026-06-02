@@ -145,17 +145,36 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function renderPremiumCard(job) {
-    return '<div class="job-card">' +
+    // アピールポイント冒頭3行
+    var appealLines = (job.appeal || '').split('\n')
+      .map(function(l) { return l.trim(); })
+      .filter(function(l) { return l.length > 0; })
+      .slice(0, 3);
+    var appealHtml = appealLines.length
+      ? '<div class="premium-appeal">' + appealLines.map(function(l) {
+          return '<div class="premium-appeal-line">' + escapeHtml(l) + '</div>';
+        }).join('') + '</div>'
+      : '';
+
+    // 仕事内容冒頭60文字
+    var descShort = (job.description || '').replace(/\n/g, ' ').trim().slice(0, 60);
+    var descHtml = descShort
+      ? '<div class="premium-desc">' + escapeHtml(descShort) + '…</div>'
+      : '';
+
+    return '<div class="job-card premium-card">' +
       '<div class="job-icon">🏢</div>' +
       '<div class="job-body">' +
         '<div class="job-badges"><span class="badge-premium">プレミアム</span></div>' +
         '<div class="job-title">' + escapeHtml(job.title) + '</div>' +
-        '<div class="job-detail">' + escapeHtml((job.company_description || '').slice(0, 60)) + '</div>' +
+        '<div class="job-detail">' + escapeHtml(job.company_description || '') + '</div>' +
         '<div class="job-meta">' +
           '<span>📍 ' + escapeHtml(job.location) + '</span>' +
           '<span>💰 ' + escapeHtml(job.salary) + '</span>' +
           '<span>👔 ' + escapeHtml(job.employment) + '</span>' +
         '</div>' +
+        descHtml +
+        appealHtml +
       '</div>' +
       '<button class="btn-detail" onclick="showPremiumDetail(' + job.id + ')">詳細を見る</button>' +
     '</div>';
@@ -280,8 +299,8 @@ document.addEventListener('DOMContentLoaded', function() {
       if (sortOrder === 'new') return b.updated > a.updated ? 1 : -1;
       if (sortOrder === 'old') return a.updated > b.updated ? 1 : -1;
       if (sortOrder === 'salary') {
-        var sa = parseInt(a.salary.replace(/[^0-9]/g, '')) || 0;
-        var sb = parseInt(b.salary.replace(/[^0-9]/g, '')) || 0;
+        var sa = maxNum(a.salary);
+        var sb = maxNum(b.salary);
         return sb - sa;
       }
       return 0;
@@ -807,6 +826,30 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // ===== ユーティリティ =====
+
+  // jobmatchから流用：給与文字列から最大値を数値で返す
+  function maxNum(s) {
+    if (!s) return 0;
+    var cleaned = s.replace(/,/g, '');
+    var maxVal = 0;
+    // 「1000万4400円」のような万円+円の複合表記
+    var complexMatches = cleaned.matchAll(/(\d+)\s*万\s*(\d+)\s*円/g);
+    for (var m of complexMatches) {
+      var val = parseInt(m[1]) * 10000 + parseInt(m[2]);
+      maxVal = Math.max(maxVal, val);
+    }
+    // 「800万円」「1100万円」のような万円のみの表記
+    var manMatches = cleaned.matchAll(/(\d+(?:\.\d+)?)\s*万円/g);
+    for (var m of manMatches) {
+      maxVal = Math.max(maxVal, Math.round(parseFloat(m[1]) * 10000));
+    }
+    // 純粋な円表記（例：5,000,000円）
+    var noMan = cleaned.replace(/\d+万\d+円/g, '').replace(/\d+(?:\.\d+)?万円/g, '');
+    var n = noMan.match(/\d+/g);
+    if (n) maxVal = Math.max(maxVal, Math.max.apply(null, n.map(Number)));
+    return maxVal;
+  }
+
   function formatPrefecture(prefecture) {
     if (!prefecture) return '';
     var prefs = prefecture.split(',').map(function(p) { return p.trim(); }).filter(Boolean);

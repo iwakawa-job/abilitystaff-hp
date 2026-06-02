@@ -365,3 +365,9 @@ img { max-width: 100%; display: block; }
 
 /* ===== 求人ID ===== */
 .job-id-badge { font-size: 11px; color: #aaa; margin-left: auto; }
+
+/* ===== プレミアム求人カード ===== */
+.premium-card { border-left: 3px solid #f0c040; }
+.premium-desc { font-size: 12px; color: #666; margin: 6px 0; line-height: 1.6; }
+.premium-appeal { margin: 8px 0; padding: 8px 12px; background: #fffbea; border-radius: 6px; border: 1px solid #f0e68c; }
+.premium-appeal-line { font-size: 12px; color: #7a5c00; line-height: 1.8; }
