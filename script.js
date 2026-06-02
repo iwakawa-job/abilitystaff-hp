@@ -38,7 +38,10 @@ document.addEventListener('DOMContentLoaded', function() {
             isAnimating = false;
             updateNavActive();
             if (targetPage === 'column') loadNoteArticles();
-            if (targetPage === 'jobs') initJobsPage();
+            if (targetPage === 'jobs') {
+              initJobsPage();
+              if (!premiumLoaded) loadPremiumJobsFromDB();
+            }
           }, 270);
         });
       });
@@ -77,6 +80,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var target = document.getElementById('tab-' + tab.dataset.tab);
       if (target) target.classList.remove('hidden');
       if (tab.dataset.tab === 'all') initJobsPage();
+      if (tab.dataset.tab === 'premium' && !premiumLoaded) loadPremiumJobsFromDB();
     });
   });
 
