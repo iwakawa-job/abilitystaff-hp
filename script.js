@@ -280,6 +280,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var category   = document.getElementById('searchCategory') ? document.getElementById('searchCategory').value : '';
     var area       = document.getElementById('searchArea') ? document.getElementById('searchArea').value : '';
     var employment = document.getElementById('searchEmployment') ? document.getElementById('searchEmployment').value : '';
+    var salaryMin  = parseInt(document.getElementById('searchSalary') ? document.getElementById('searchSalary').value || '0' : '0') || 0;
     var tags = [];
     document.querySelectorAll('.tag-check input:checked').forEach(function(el) { tags.push(el.value); });
     var sortOrder  = document.getElementById('sortOrder') ? document.getElementById('sortOrder').value : 'new';
@@ -287,7 +288,8 @@ document.addEventListener('DOMContentLoaded', function() {
     filteredJobs = allJobs.filter(function(job) {
       if (category && job.category.indexOf(category) === -1 && job.subcategory.indexOf(category) === -1) return false;
       if (area && job.prefecture.indexOf(area) === -1) return false;
-      if (employment && job.employment.indexOf(employment) === -1) return false;
+      if (employment && (job.employment || '').indexOf(employment) === -1) return false;
+      if (salaryMin > 0 && job.salary_max != null && job.salary_max < salaryMin) return false;
       if (tags.length > 0) {
         var jobTags = job.tags || [];
         var matched = tags.every(function(tag) {
@@ -507,7 +509,7 @@ document.addEventListener('DOMContentLoaded', function() {
   var searchReset = document.getElementById('searchReset');
   if (searchReset) {
     searchReset.addEventListener('click', function() {
-      ['searchCategory','searchArea','searchEmployment'].forEach(function(id) {
+      ['searchCategory','searchArea','searchEmployment','searchSalary'].forEach(function(id) {
         var el = document.getElementById(id);
         if (el) el.value = '';
       });
@@ -692,10 +694,14 @@ document.addEventListener('DOMContentLoaded', function() {
       var selectedTags = Array.from(document.querySelectorAll('.filter-checks input:checked')).map(function(cb) { return cb.value; });
       var selectedCategory = document.getElementById('searchCategory') ? document.getElementById('searchCategory').value : '';
       var selectedPref = document.getElementById('searchArea') ? document.getElementById('searchArea').value : '';
+      var selectedEmployment = document.getElementById('searchEmployment') ? document.getElementById('searchEmployment').value : '';
+      var selectedSalaryMin = parseInt(document.getElementById('searchSalary') ? document.getElementById('searchSalary').value || '0' : '0') || 0;
 
       var candidates = allJobs.filter(function(j) {
         if (selectedCategory && !j.category.includes(selectedCategory)) return false;
         if (selectedPref && !(j.prefecture || '').includes(selectedPref)) return false;
+        if (selectedEmployment && !(j.employment || '').includes(selectedEmployment)) return false;
+        if (selectedSalaryMin > 0 && j.salary_max != null && j.salary_max < selectedSalaryMin) return false;
         if (selectedTags.length > 0 && !selectedTags.every(function(tag) { return (j.tags || []).includes(tag); })) return false;
         if (targetCategories.length > 0 && !targetCategories.some(function(t) { return j.category.includes(t) || t.includes(j.category); })) return false;
         return true;

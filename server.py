@@ -39,7 +39,7 @@ def load_jobs_from_db():
         cur = conn.cursor()
         cur.execute("""
             SELECT j.id, j.company, j.category, j.subcategory, j.title,
-                   LEFT(j.description, 120), j.salary, j.employment,
+                   LEFT(j.description, 120), j.salary, j.salary_max, j.employment,
                    j.prefecture, j.tags, j.updated,
                    a.age, a.job_change_count, a.gender, a.note,
                    LEFT(j.requirements, 200)
@@ -58,17 +58,18 @@ def load_jobs_from_db():
                 'title': row[4] or '',
                 'description': row[5] or '',
                 'salary': row[6] or '',
-                'employment': row[7] or '',
-                'prefecture': row[8] or '',
-                'tags': json.loads(row[9]) if row[9] else [],
-                'updated': str(row[10]) if row[10] else '',
+                'salary_max': row[7],
+                'employment': row[8] or '',
+                'prefecture': row[9] or '',
+                'tags': json.loads(row[10]) if row[10] else [],
+                'updated': str(row[11]) if row[11] else '',
                 'agent_condition': {
-                    'age': row[11] or '',
-                    'job_change_count': row[12] or '',
-                    'gender': row[13] or '',
-                    'note': row[14] or '',
+                    'age': row[12] or '',
+                    'job_change_count': row[13] or '',
+                    'gender': row[14] or '',
+                    'note': row[15] or '',
                 },
-                'requirements': row[15] or '',
+                'requirements': row[16] or '',
             }
             jobs.append(job)
         cur.close()
