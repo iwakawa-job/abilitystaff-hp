@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function() {
         jobsLoaded = true;
         currentJobPage = 1;
         buildFilterOptions(data);
-        renderJobs();
+        applyFilter();
       })
       .catch(function(err) {
         console.error('求人取得エラー:', err);
@@ -285,32 +285,39 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.tag-check input:checked').forEach(function(el) { tags.push(el.value); });
     var sortOrder  = document.getElementById('sortOrder') ? document.getElementById('sortOrder').value : 'new';
 
-    filteredJobs = allJobs.filter(function(job) {
-      if (category && job.category.indexOf(category) === -1 && job.subcategory.indexOf(category) === -1) return false;
-      if (area && job.prefecture.indexOf(area) === -1) return false;
-      if (employment && (job.employment || '').indexOf(employment) === -1) return false;
+    // ベースデータ：AIマッチング結果があればそちらを使う
+    var base = matchedJobs || allJobs;
+
+    filteredJobs = base.filter(function(job) {
+      if (category && job.category !== category) return false;
+      if (area && job.prefecture !== area) return false;
+      if (employment && !(job.employment || '').includes(employment)) return false;
       if (salaryMin > 0 && job.salary_max != null && job.salary_max < salaryMin) return false;
-      if (tags.length > 0) {
-        var jobTags = job.tags || [];
-        var matched = tags.every(function(tag) {
-          return jobTags.some(function(jt) { return jt.indexOf(tag) !== -1; });
-        });
-        if (!matched) return false;
-      }
+      if (tags.length > 0 && !tags.every(function(t) { return (job.tags || []).includes(t); })) return false;
       return true;
     });
 
-    // ソート
-    filteredJobs.sort(function(a, b) {
-      if (sortOrder === 'new') return b.updated > a.updated ? 1 : -1;
-      if (sortOrder === 'old') return a.updated > b.updated ? 1 : -1;
-      if (sortOrder === 'salary') {
-        var sa = maxNum(a.salary);
-        var sb = maxNum(b.salary);
-        return sb - sa;
-      }
-      return 0;
-    });
+    // ソート（jobmatchと同じ）
+    if (sortOrder === 'salary') {
+      filteredJobs.sort(function(a, b) { return maxNum(b.salary) - maxNum(a.salary); });
+    } else if (sortOrder === 'new') {
+      filteredJobs.sort(function(a, b) {
+        if (!a.updated && !b.updated) return 0;
+        if (!a.updated) return 1;
+        if (!b.updated) return -1;
+        return b.updated.localeCompare(a.updated);
+      });
+    } else if (sortOrder === 'old') {
+      filteredJobs.sort(function(a, b) {
+        if (!a.updated && !b.updated) return 0;
+        if (!a.updated) return 1;
+        if (!b.updated) return -1;
+        return a.updated.localeCompare(b.updated);
+      });
+    } else if (matchedJobs) {
+      // AIマッチング結果はスコア順を維持
+      filteredJobs.sort(function(a, b) { return (b.matchScore || 0) - (a.matchScore || 0); });
+    }
 
     currentJobPage = 1;
     renderJobs();
@@ -352,10 +359,13 @@ document.addEventListener('DOMContentLoaded', function() {
       var category = job.category ? '<span class="job-category-badge">' + escapeHtml(job.category) + '</span>' : '';
       var subcategory = job.subcategory ? '<span class="job-category-badge sub">' + escapeHtml(job.subcategory) + '</span>' : '';
       var jobIdBadge = '<span class="job-id-badge">ID:' + escapeHtml(job.id) + '</span>';
+      var descShort = (job.description || '').replace(/\n/g, ' ').trim().slice(0, 60);
+      var descHtml = descShort ? '<div class="job-card-desc">' + escapeHtml(descShort) + '…</div>' : '';
       return '<div class="job-card-new' + (job.matchScore !== undefined ? ' matched' : '') + '">' +
         '<div class="job-card-badges">' + category + subcategory + matchBadge + jobIdBadge + '</div>' +
         '<div class="job-card-title">' + escapeHtml(job.title) + '</div>' +
         matchReason +
+        descHtml +
         '<div class="job-card-meta">' +
           '<span>📍 ' + formatPrefecture(job.prefecture) + '</span>' +
           '<span>👔 ' + escapeHtml(job.employment) + '</span>' +
@@ -514,9 +524,22 @@ document.addEventListener('DOMContentLoaded', function() {
         if (el) el.value = '';
       });
       document.querySelectorAll('.tag-check input').forEach(function(el) { el.checked = false; });
-      filteredJobs = allJobs;
+      // AIマッチング結果もリセット
+      matchedJobs = null;
+      filteredJobs = allJobs.slice();
       currentJobPage = 1;
-      renderJobs();
+      // バナーを非表示
+      var banner = document.getElementById('matchBanner');
+      if (banner) banner.classList.add('hidden');
+      // ファイル・テキストをクリア
+      uploadedFiles = [];
+      var fileList = document.getElementById('fileList');
+      if (fileList) fileList.innerHTML = '';
+      var resumeText = document.getElementById('resumeText');
+      if (resumeText) resumeText.value = '';
+      var fileInput = document.getElementById('fileInput');
+      if (fileInput) fileInput.value = '';
+      applyFilter();
     });
   }
 
@@ -607,7 +630,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   async function runAIMatch() {
     var manualText = document.getElementById('resumeText') ? document.getElementById('resumeText').value.trim() : '';
-    var userWishes = document.getElementById('userWishes') ? document.getElementById('userWishes').value.trim() : '';
+    var userWishes = '';
 
     if (!uploadedFiles.length && !manualText) {
       alert('ファイルをアップロードするかテキストを入力してください。');
@@ -752,7 +775,7 @@ document.addEventListener('DOMContentLoaded', function() {
           model: 'claude-haiku-4-5-20251001',
           max_tokens: 1500,
           temperature: 0,
-          messages: [{ role: 'user', content: 'あなたは優秀な人材紹介エージェントです。候補者のプロフィールと求人リストを照合し、マッチ度をスコアリングしてください。\n\n【候補者プロフィール】\n現在の職種: ' + (profile.current_job_type || profile.job_types?.[0] || '不明') + '\n年齢: ' + (profile.age ? profile.age + '歳' : '不明') + '\n' + profile.summary + '\nスキル: ' + (profile.skills || []).join(', ') + '\n希望職種: ' + (profile.job_types || []).join(', ') + '\n希望勤務地: ' + (profile.prefectures || []).join(', ') + '\n' + (userWishes ? '本人の希望条件:\n' + userWishes : '') + '\n\n【絶対ルール】\n・候補者の現在の職種「' + (profile.current_job_type || '') + '」と全く異なる職種の求人はスコアを5以下にしてください\n・reasonには給与・年収の金額を含めないでください\n\n【求人リスト（インデックス|タイトル|職種（親）|職種（子）|都道府県|給与|応募資格）】\n' + jobLines + '\n\n上位10件をマッチ度でスコアリングし、JSON配列のみ返してください。\nフィールド: index（数値）, score（0-100の整数）, reason（マッチ理由を100字以内）' }]
+          messages: [{ role: 'user', content: 'あなたは優秀な人材紹介エージェントです。候補者のプロフィールと求人リストを照合し、マッチ度をスコアリングしてください。\n\n【候補者プロフィール】\n現在の職種: ' + (profile.current_job_type || profile.job_types?.[0] || '不明') + '\n年齢: ' + (profile.age ? profile.age + '歳' : '不明') + '\n' + profile.summary + '\nスキル: ' + (profile.skills || []).join(', ') + '\n希望職種: ' + (profile.job_types || []).join(', ') + '\n希望勤務地: ' + (profile.prefectures || []).join(', ') + '\n\n【絶対ルール】\n・候補者の現在の職種「' + (profile.current_job_type || '') + '」と全く異なる職種の求人はスコアを5以下にしてください\n・reasonには給与・年収の金額を含めないでください\n\n【求人リスト（インデックス|タイトル|職種（親）|職種（子）|都道府県|給与|応募資格）】\n' + jobLines + '\n\n上位10件をマッチ度でスコアリングし、JSON配列のみ返してください。\nフィールド: index（数値）, score（0-100の整数）, reason（マッチ理由を100字以内）' }]
         })
       });
 

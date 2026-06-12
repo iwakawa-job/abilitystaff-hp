@@ -371,3 +371,6 @@ img { max-width: 100%; display: block; }
 .premium-desc { font-size: 12px; color: #666; margin: 6px 0; line-height: 1.6; }
 .premium-appeal { margin: 8px 0; padding: 8px 12px; background: #fffbea; border-radius: 6px; border: 1px solid #f0e68c; }
 .premium-appeal-line { font-size: 12px; color: #7a5c00; line-height: 1.8; }
+
+/* ===== 求人カード業務内容 ===== */
+.job-card-desc { font-size: 12px; color: #666; margin: 4px 0 6px; line-height: 1.6; }
